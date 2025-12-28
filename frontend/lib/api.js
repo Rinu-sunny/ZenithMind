@@ -92,7 +92,7 @@ export const aiAPI = {
 /**
  * Batch export for easy importing
  */
-export default {
+const api = {
   get,
   post,
   put,
@@ -101,3 +101,5 @@ export default {
   insightsAPI,
   aiAPI,
 };
+
+export default api;

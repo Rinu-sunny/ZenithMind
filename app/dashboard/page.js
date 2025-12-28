@@ -29,31 +29,23 @@ export default function DashboardPage() {
   const [needsAnalysis, setNeedsAnalysis] = useState(false);
 
   const analyzeAllEntries = async () => {
-    setAnalyzing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const res = await fetch('/api/analyzeEntries', {
+      await fetch('/api/analyzeEntries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id }),
+        body: JSON.stringify({ user_id: user.id, force_reanalyze: true }),
       });
-
-      const result = await res.json();
-      if (result.error) {
-        alert('Analysis failed: ' + result.error);
-      } else {
-        alert(result.insight || 'Analysis complete!');
-        // Reload the page to show updated data
-        window.location.reload();
-      }
     } catch (err) {
-      alert('Analysis failed: ' + err.message);
-    } finally {
-      setAnalyzing(false);
+      console.error('Analysis failed:', err.message);
     }
   };
+
+  useEffect(() => {
+    analyzeAllEntries();
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -129,7 +121,7 @@ export default function DashboardPage() {
             <div>
               <p
                 className="zm-kicker"
-                style={{ color: "#1e293b", fontSize: "15px" }}
+                style={{ color: "#7cb87c", fontSize: "13px" }}
               >
                 Overview
               </p>
@@ -138,7 +130,7 @@ export default function DashboardPage() {
 
               <p
                 className="zm-dashboard-subtitle"
-                style={{ color: "#374151", fontSize: "16px" }}
+                style={{ color: "#6a766a", fontSize: "15px" }}
               >
                 A quick snapshot of how you&apos;ve been feeling recently based on
                 your journal entries.
@@ -147,93 +139,34 @@ export default function DashboardPage() {
 
             <div className="zm-dashboard-badge">
               <span className="zm-dot" />
-              <span style={{ color: "#334155", fontSize: "14px" }}>
+              <span style={{ color: "#3a4a3a", fontSize: "14px" }}>
                 Connected to Supabase
               </span>
             </div>
-
-            <button
-              onClick={analyzeAllEntries}
-              disabled={analyzing}
-              style={{
-                padding: "10px 18px",
-                background: "#8b5cf6",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                cursor: analyzing ? "not-allowed" : "pointer",
-                fontSize: 14,
-                fontWeight: 600,
-                opacity: analyzing ? 0.6 : 1,
-                marginTop: 12,
-              }}
-            >
-              {analyzing ? "Analyzing..." : "🤖 Analyze All Entries"}
-            </button>
           </header>
-
-          {/* Analysis needed banner */}
-          {needsAnalysis && (
-            <section style={{
-              background: "#fef3c7",
-              border: "2px solid #fbbf24",
-              borderRadius: 12,
-              padding: 20,
-              marginBottom: 24,
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              justifyContent: "space-between"
-            }}>
-              <div>
-                <h3 style={{ margin: "0 0 4px 0", fontSize: 16, color: "#92400e" }}>
-                  📊 Your entries need analysis
-                </h3>
-                <p style={{ margin: 0, fontSize: 14, color: "#78350f" }}>
-                  Click the button to analyze your {entriesThisWeek} entries with AI and unlock sentiment insights!
-                </p>
-              </div>
-              <button
-                onClick={analyzeAllEntries}
-                disabled={analyzing}
-                style={{
-                  padding: "10px 18px",
-                  background: "#8b5cf6",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  cursor: analyzing ? "not-allowed" : "pointer",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  opacity: analyzing ? 0.6 : 1,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {analyzing ? "Analyzing..." : "Analyze Now"}
-              </button>
-            </section>
-          )}
 
           {/* AI Insight Card */}
           {aiInsight && (
             <section style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              borderRadius: 14,
+              background: "#e8f5e8",
+              borderRadius: 18,
               padding: 24,
               marginBottom: 28,
-              color: "white"
+              color: "#2d3a2d",
+              border: "1px solid rgba(124, 184, 124, 0.35)",
+              boxShadow: "0 8px 20px rgba(124, 184, 124, 0.2)",
             }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
-                <span style={{ fontSize: 24 }}>✨</span>
-                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>AI Insight</h2>
+                <span style={{ fontSize: 20 }}>✎</span>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "0.01em" }}>Insight</h2>
               </div>
               <p style={{
                 margin: 0,
                 lineHeight: 1.6,
                 fontSize: 15,
-                opacity: 0.95
+                opacity: 0.98
               }}>
-                {loadingInsight ? "Generating insight..." : aiInsight}
+                {loadingInsight ? "Collecting notes..." : aiInsight}
               </p>
             </section>
           )}
@@ -252,7 +185,7 @@ export default function DashboardPage() {
 
               <p
                 className="zm-card-helper"
-                style={{ color: "#4b5563", fontSize: "14px" }}
+                style={{ color: "#6a766a", fontSize: "14px" }}
               >
                 On a scale from 0 (very low) to 1 (very positive).
               </p>
@@ -261,7 +194,7 @@ export default function DashboardPage() {
             <div className="zm-dashboard-card">
               <p
                 className="zm-card-label"
-                style={{ color: "#374151", fontSize: "16px" }}
+                style={{ color: "#6a766a", fontSize: "16px" }}
               >
                 Dominant emotion
               </p>
@@ -270,7 +203,7 @@ export default function DashboardPage() {
 
               <p
                 className="zm-card-helper"
-                style={{ color: "#4b5563", fontSize: "14px" }}
+                style={{ color: "#6a766a", fontSize: "14px" }}
               >
                 Most common feeling across your entries.
               </p>
@@ -279,7 +212,7 @@ export default function DashboardPage() {
             <div className="zm-dashboard-card">
               <p
                 className="zm-card-label"
-                style={{ color: "#374151", fontSize: "16px" }}
+                style={{ color: "#6a766a", fontSize: "16px" }}
               >
                 Entries this week
               </p>
@@ -288,7 +221,7 @@ export default function DashboardPage() {
 
               <p
                 className="zm-card-helper"
-                style={{ color: "#4b5563", fontSize: "14px" }}
+                style={{ color: "#6a766a", fontSize: "14px" }}
               >
                 You&apos;re building a consistent habit.
               </p>
@@ -297,7 +230,7 @@ export default function DashboardPage() {
             <div className="zm-dashboard-card">
               <p
                 className="zm-card-label"
-                style={{ color: "#374151", fontSize: "16px" }}
+                style={{ color: "#6a766a", fontSize: "16px" }}
               >
                 Current streak
               </p>
@@ -306,7 +239,7 @@ export default function DashboardPage() {
 
               <p
                 className="zm-card-helper"
-                style={{ color: "#4b5563", fontSize: "14px" }}
+                style={{ color: "#6a766a", fontSize: "14px" }}
               >
                 Best streak: 7 days.
               </p>
@@ -319,9 +252,9 @@ export default function DashboardPage() {
             {/* Line chart */}
             <div className="zm-dashboard-chart-card">
               <div className="zm-chart-header">
-                <h2 style={{ color: "#1f2937" }}>Weekly mood trend</h2>
+                <h2 style={{ color: "#2d3a2d" }}>Weekly mood trend</h2>
 
-                <p style={{ color: "#4b5563", fontSize: "15px" }}>
+                <p style={{ color: "#6a766a", fontSize: "15px" }}>
                   Each point represents the AI sentiment score for that day.
                 </p>
               </div>
@@ -349,7 +282,7 @@ export default function DashboardPage() {
                     <Line
                       type="monotone"
                       dataKey="score"
-                      stroke="#22c55e"
+                      stroke="#7cb87c"
                       strokeWidth={3}
                       dot={{ r: 4 }}
                       activeDot={{ r: 6 }}
@@ -362,9 +295,9 @@ export default function DashboardPage() {
             {/* Pie chart */}
             <div className="zm-dashboard-chart-card">
               <div className="zm-chart-header">
-                <h2 style={{ color: "#1f2937" }}>Emotion breakdown</h2>
+                <h2 style={{ color: "#2d3a2d" }}>Emotion breakdown</h2>
 
-                <p style={{ color: "#4b5563", fontSize: "15px" }}>
+                <p style={{ color: "#6a766a", fontSize: "15px" }}>
                   Proportion of emotions detected in your recent entries.
                 </p>
               </div>
@@ -396,11 +329,11 @@ export default function DashboardPage() {
                         style={{ backgroundColor: emotionColors[index % emotionColors.length] }}
                       />
 
-                      <span style={{ color: "#1f2937", fontSize: "15px" }}>
+                      <span style={{ color: "#2d3a2d", fontSize: "15px" }}>
                         {item.name}
                       </span>
 
-                      <span style={{ color: "#475569", fontSize: "15px" }}>
+                      <span style={{ color: "#6a766a", fontSize: "15px" }}>
                         {item.value}
                       </span>
                     </li>
@@ -413,9 +346,9 @@ export default function DashboardPage() {
           {/* Insights */}
           <section className="zm-dashboard-insights">
             <div className="zm-dashboard-card zm-insight-card">
-              <h2 style={{ color: "#1f2937" }}>Weekly reflection insight</h2>
+              <h2 style={{ color: "#2d3a2d" }}>Weekly reflection insight</h2>
 
-              <p style={{ color: "#374151", fontSize: "15px" }}>
+              <p style={{ color: "#3a4a3a", fontSize: "15px" }}>
                 {avgSentiment != null ? (
                   <>Your mood is averaging <strong>{avgSentiment.toFixed(2)}</strong> this week.</>
                 ) : (
@@ -423,11 +356,11 @@ export default function DashboardPage() {
                 )}
               </p>
 
-              <p style={{ color: "#374151", fontSize: "15px" }}>
+              <p style={{ color: "#3a4a3a", fontSize: "15px" }}>
                 {dominantEmotion ? `Most common feeling: ${dominantEmotion}.` : ''}
               </p>
 
-              <p style={{ color: "#6b7280", fontSize: "15px" }}>
+              <p style={{ color: "#6a766a", fontSize: "15px" }}>
                 This uses AI analysis from Supabase.
               </p>
             </div>
