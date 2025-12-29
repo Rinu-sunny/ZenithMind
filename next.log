@@ -1,0 +1,17 @@
+
+> zenithmind-frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.57:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 798ms
+ GET /api/aiStatus 200 in 290ms (compile: 241ms, render: 49ms)
+ GET /api/aiStatus 200 in 40ms (compile: 15ms, render: 25ms)
+ GET /api/aiStatus 200 in 23ms (compile: 5ms, render: 18ms)
+ POST /api/analyzeEntries 500 in 2.2s (compile: 2.0s, render: 151ms)
+ POST /api/analyzeEntries 500 in 27ms (compile: 5ms, render: 21ms)
+  Reload env: .env.local
