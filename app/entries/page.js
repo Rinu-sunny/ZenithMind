@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/supabaseClient";
+import { useToast, ToastContainer } from "../components/Toast";
 
 // Emotion color mapping
 const emotionColorMap = {
@@ -64,6 +65,9 @@ export default function EntriesPage() {
   const [responseModal, setResponseModal] = useState(null); // { entryId, reflection, fullContent } or null
   const [editContent, setEditContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { entryId } or null
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toasts, showToast, removeToast } = useToast();
 
   useEffect(() => {
     fetchEntries();
@@ -92,6 +96,7 @@ export default function EntriesPage() {
 
       if (supabaseError) {
         setError(supabaseError.message);
+        showToast("Failed to load entries: " + supabaseError.message, "error");
         setEntries([]);
       } else if (data && data.length > 0) {
         // Format entries for display
@@ -143,7 +148,7 @@ export default function EntriesPage() {
   // Handle saving edited entry
   const saveResponse = async () => {
     if (!editContent.trim()) {
-      alert("Please write something");
+      showToast("Please write something", "warning");
       return;
     }
 
@@ -155,14 +160,14 @@ export default function EntriesPage() {
         .eq("id", responseModal.entryId);
 
       if (error) {
-        alert("Failed to save: " + error.message);
+        showToast("Failed to save: " + error.message, "error");
       } else {
-        alert("Entry updated!");
+        showToast("Entry updated!", "success");
         closeResponseModal();
         fetchEntries(); // Refresh list
       }
     } catch (err) {
-      alert("Error saving: " + err.message);
+      showToast("Error saving: " + err.message, "error");
     } finally {
       setIsSaving(false);
     }
@@ -170,10 +175,7 @@ export default function EntriesPage() {
 
   // Handle deleting an entry
   const deleteEntry = async (entryId) => {
-    if (!confirm("Are you sure you want to delete this entry? This action cannot be undone.")) {
-      return;
-    }
-
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from("journal_entries")
@@ -181,19 +183,23 @@ export default function EntriesPage() {
         .eq("id", entryId);
 
       if (error) {
-        alert("Failed to delete: " + error.message);
+        showToast("Failed to delete: " + error.message, "error");
       } else {
-        alert("Entry deleted!");
+        showToast("Entry deleted!", "success");
+        setDeleteConfirm(null);
         fetchEntries(); // Refresh list
       }
     } catch (err) {
-      alert("Error deleting: " + err.message);
+      showToast("Error deleting: " + err.message, "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <>
       <Navbar />
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       {/* Response Modal Overlay */}
       {responseModal && (
@@ -317,6 +323,91 @@ export default function EntriesPage() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(38,34,30,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 18,
+              padding: 30,
+              maxWidth: 420,
+              width: "90%",
+              border: "1px solid rgba(180, 190, 180, 0.35)",
+              boxShadow: "0 12px 32px rgba(90, 100, 90, 0.12)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ margin: "0 0 12px 0", fontSize: 22, color: "#2d3a2d", letterSpacing: "0.01em" }}>
+              Delete this page?
+            </h2>
+
+            <p style={{ margin: "0 0 24px 0", color: "#6a766a", lineHeight: 1.55, fontSize: 15 }}>
+              This action cannot be undone. The page and all its contents will be permanently removed from your journal.
+            </p>
+
+            {/* Action buttons */}
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                style={{
+                  padding: "10px 18px",
+                  background: "#f0f4f0",
+                  border: "1px solid rgba(124, 184, 124, 0.35)",
+                  borderRadius: 10,
+                  cursor: isDeleting ? "not-allowed" : "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#5a6a5a",
+                  opacity: isDeleting ? 0.65 : 1,
+                }}
+              >
+                Keep it
+              </button>
+              <button
+                onClick={() => deleteEntry(deleteConfirm.entryId)}
+                disabled={isDeleting}
+                style={{
+                  padding: "10px 18px",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: 10,
+                  cursor: isDeleting ? "not-allowed" : "pointer",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  opacity: isDeleting ? 0.65 : 1,
+                  boxShadow: "0 8px 16px rgba(220, 38, 38, 0.22)",
+                }}
+              >
+                {isDeleting ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main
         style={{
           background: "linear-gradient(to bottom, #f8faf8 0%, #ffffff 50%, #f4f6f4 100%)",
@@ -367,13 +458,22 @@ export default function EntriesPage() {
           {error && (
             <div style={{
               background: "#fee2e2",
-              color: "#dc2626",
-              padding: "12px 16px",
-              borderRadius: "8px",
-              marginBottom: "20px",
+              border: "1px solid #fca5a5",
+              color: "#991b1b",
+              padding: "16px 18px",
+              borderRadius: "10px",
+              marginBottom: "24px",
               fontSize: "14px",
+              fontWeight: 500,
+              display: "flex",
+              gap: 12,
+              alignItems: "flex-start",
             }}>
-              Error: {error}
+              <span style={{ fontSize: 18, flexShrink: 0 }}>⚠</span>
+              <div style={{ flex: 1 }}>
+                <strong>Couldn't load your entries</strong>
+                <p style={{ margin: "6px 0 0 0", color: "#7f1d1d" }}>{error}</p>
+              </div>
             </div>
           )}
 
@@ -398,7 +498,7 @@ export default function EntriesPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 gap: 18,
               }}
             >
@@ -513,7 +613,7 @@ export default function EntriesPage() {
                       </a>
 
                       <button
-                        onClick={() => deleteEntry(entry.id)}
+                        onClick={() => setDeleteConfirm({ entryId: entry.id })}
                         style={{
                           padding: "9px 12px",
                           background: "#f0f4f0",

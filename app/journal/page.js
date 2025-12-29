@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "../../supabaseClient";
+import { useToast, ToastContainer } from "../components/Toast";
 
 export default function JournalPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toasts, showToast, removeToast } = useToast();
   
   const [entry, setEntry] = useState("");
   const [reflection, setReflection] = useState("");
@@ -49,7 +51,7 @@ export default function JournalPage() {
     e.preventDefault();
 
     if (!entry.trim()) {
-      alert("Please write something before submitting.");
+      showToast("Please write something before submitting.", "warning");
       return;
     }
 
@@ -60,7 +62,7 @@ export default function JournalPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      alert("Please login first");
+      showToast("Please login first", "warning");
       setIsSaving(false);
       return;
     }
@@ -97,9 +99,9 @@ export default function JournalPage() {
       }
 
       if (error) {
-        alert(error.message);
+        showToast(error.message, "error");
       } else {
-        alert(editingEntryId ? "Entry updated successfully!" : "Entry saved successfully!");
+        showToast(editingEntryId ? "Entry updated successfully!" : "Entry saved successfully!", "success");
         setEntry("");
         setReflection("");
         setEditingEntryId(null);
@@ -119,7 +121,7 @@ export default function JournalPage() {
         router.push("/entries");
       }
     } catch (err) {
-      alert("An error occurred: " + err.message);
+      showToast("An error occurred: " + err.message, "error");
     } finally {
       setIsSaving(false);
     }
@@ -128,6 +130,7 @@ export default function JournalPage() {
   return (
     <>
       <Navbar />
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       <main className="zm-journal-page">
         <div className="zm-journal-layout">
