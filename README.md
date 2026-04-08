@@ -2,6 +2,11 @@
 
 A modern journaling application that helps users understand their emotions and track personal insights through intelligent **local emotion analysis** - no external APIs required.
 
+# Team Members
+-Rinu Sunny Mathew
+-Daya Manoj
+-Devavrath M periyal
+
 ##  Features
 
 - **Journal Entries** - Write and organize your thoughts with automatic timestamp tracking (5000 character limit)
@@ -80,42 +85,4 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. The app will auto-reload as you edit.
 
-##  Project Structure
-
-```
-├── app/                      # Next.js app directory (App Router)
-│   ├── api/                  # API routes (backend endpoints)
-│   │   ├── addEntry/         # POST - Add journal entry
-│   │   ├── getEntries/       # GET - Fetch user entries
-│   │   ├── analyzeEntries/   # POST - Run emotion analysis
-│   │   ├── generateInsights/ # GET - Generate AI insights
-│   │   ├── getInsights/      # GET - Retrieve stored insights
-│   │   ├── checkUserExists/  # POST - User verification
-│   │   └── aiStatus/         # GET - Service status check
-│   ├── components/           # Reusable React components
-│   │   ├── Navbar.js         # Navigation bar with auth status
-│   │   └── Toast.js          # Toast notifications component
-│   ├── dashboard/            # Dashboard with charts and analytics
-│   ├── entries/              # Browse and manage entries page
-│   ├── journal/              # Write/edit journal entry page
-│   ├── login/                # Login and signup page
-│   ├── reset-password/       # Password reset page
-│   ├── debug-db/             # Database debugging page
-│   ├── layout.js             # Root layout wrapper
-│   ├── page.js               # Home page (redirects to login/dashboard)
-│   └── globals.css           # Global styles
-├── ai/
-│   └── analyser.js           # Local emotion/sentiment analysis engine
-├── lib/                      # Shared utilities
-│   ├── sentiment.js          # Sentiment calculation helpers
-│   ├── cors.js               # CORS configuration and handlers
-│   └── supabaseServerClient.js # Server-side Supabase client
-├── migrations/               # SQL database migrations
-│   ├── 001_create_journal_insights.sql
-│   └── 002_create_journal_entries.sql
-├── public/                   # Static assets
-├── supabaseClient.js         # Client-side Supabase initialization
-├── package.json              # Dependencies and scripts
-└── next.config.mjs           # Next.js configuration
-```
 
