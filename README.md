@@ -2,7 +2,7 @@
 
 A modern journaling application that helps users understand their emotions and track personal insights through intelligent **local emotion analysis** - no external APIs required.
 
-# Team Members
+## Team Members
 - Rinu Sunny Mathew
 - Daya Manoj
 - Devavrath M periyal
